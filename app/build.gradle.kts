@@ -46,4 +46,5 @@ dependencies {
     implementation(libs.xeonyu.logger)
     implementation(project(":floating-view"))
     implementation(libs.androidx.activity)
+    implementation(libs.lottie)
 }

@@ -5,33 +5,43 @@
     android:layout_height="wrap_content">
 
 
-    <androidx.appcompat.widget.AppCompatImageView
-        android:id="@+id/iv_float_big"
-        android:layout_width="69dp"
-        android:layout_height="69dp"
+    <com.airbnb.lottie.LottieAnimationView
+        android:id="@+id/content_view"
+        android:layout_width="126dp"
+        android:layout_height="126dp"
+        android:padding="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@mipmap/ic_launcher" />
+        app:lottie_autoPlay="true"
+        app:lottie_loop="true" />
 
-    <androidx.appcompat.widget.AppCompatImageView
-        android:id="@+id/iv_float_middle"
-        android:layout_width="49dp"
-        android:layout_height="49dp"
-        android:layout_marginTop="6dp"
+
+    <com.airbnb.lottie.LottieAnimationView
+        android:id="@+id/move_view"
+        android:layout_width="126dp"
+        android:layout_height="126dp"
+        android:layout_gravity="center"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/iv_float_big"
-        app:srcCompat="@mipmap/ic_launcher" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:lottie_autoPlay="true"
+        app:lottie_loop="true" />
 
-    <androidx.appcompat.widget.AppCompatImageView
-        android:id="@+id/iv_float_small"
-        android:layout_width="49dp"
-        android:layout_height="49dp"
-        android:layout_marginTop="6dp"
+
+    <com.airbnb.lottie.LottieAnimationView
+        android:id="@+id/edge_view"
+        android:layout_width="126dp"
+        android:layout_height="126dp"
+        android:layout_gravity="center"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/iv_float_middle"
-        app:srcCompat="@mipmap/ic_launcher" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:lottie_autoPlay="true"
+        app:lottie_loop="true" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

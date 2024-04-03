@@ -20,5 +20,9 @@ class ThirdActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        binding.button.setOnClickListener {
+            JavaActivity.start(this)
+        }
+
     }
 }

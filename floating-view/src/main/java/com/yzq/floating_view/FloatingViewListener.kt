@@ -7,7 +7,6 @@ package com.yzq.floating_view
  */
 
 interface FloatingViewListener {
-
     //点击事件
-    fun onClick()
+    fun onClick() {}
 }
