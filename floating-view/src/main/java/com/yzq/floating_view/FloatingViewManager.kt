@@ -54,7 +54,9 @@ class FloatingViewManager private constructor(
         }
         //先移除
         detach()
+        floatingViewContainer.alpha = 0f
         activity.rootContainer()?.addView(floatingViewContainer)
+        floatingViewContainer.animate().alpha(1f).setDuration(300).start()
 
     }
 
