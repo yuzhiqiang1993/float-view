@@ -4,7 +4,6 @@ import android.app.Activity
 import android.view.ViewGroup
 import com.yzq.application.AppManager
 import com.yzq.application.DefaultActivityLifecycleCallbacks
-import com.yzq.logger.Logger
 
 
 /**
@@ -46,10 +45,8 @@ class FloatingViewManager private constructor(
 
     private fun attach(activity: Activity) {
 
-        Logger.it(TAG, "attach", "activity:$activity")
         //在黑名单中的页面不显示悬浮窗
         if (blackList.contains(activity::class.java)) {
-            Logger.it(TAG, "attach", "blackList contains")
             return
         }
         //先移除
@@ -64,7 +61,6 @@ class FloatingViewManager private constructor(
     private fun detach() {
         //如果添加过，则移除
         if (floatingViewContainer.parent != null) {
-            Logger.it(TAG, "detach", "removeView")
             (floatingViewContainer.parent as ViewGroup).removeView(floatingViewContainer)
         }
     }

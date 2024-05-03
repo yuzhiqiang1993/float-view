@@ -8,11 +8,9 @@ android {
 }
 
 dependencies {
-
-    implementation(libs.androidx.core.ktx)
-    implementation(platform(libs.kotlin.bom))
-    implementation(libs.androidx.appcompat)
+    implementation(platform(libs.kotlin.bom.stable))
+    implementation(libs.androidx.core.ktx.stable)
+    implementation(libs.androidx.appcompat.stable)
     api(libs.xeonyu.application)
-    implementation(libs.xeonyu.coroutine)
-    implementation(libs.xeonyu.logger)
+    implementation(libs.androidx.annotation.jvm)
 }

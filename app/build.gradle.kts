@@ -1,6 +1,5 @@
 plugins {
     alias(libs.plugins.xeonyu.application)
-    alias(libs.plugins.kotlin.android)
 }
 
 
@@ -38,13 +37,16 @@ android {
 }
 
 dependencies {
+//    implementation(platform(libs.kotlin.bom))
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.constraintlayout)
     implementation(libs.google.material)
     implementation(libs.xeonyu.binding)
     implementation(libs.xeonyu.logger)
-    implementation(project(":floating-view"))
-    implementation(libs.androidx.activity)
+    implementation(libs.androidx.activity.ktx)
     implementation(libs.lottie)
+    implementation(libs.brv)
+
+    implementation(project(":floating-view"))
 }
