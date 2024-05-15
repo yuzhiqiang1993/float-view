@@ -1,6 +1,7 @@
 package com.yzq.floating_view
 
 import android.app.Activity
+import android.os.Bundle
 import android.view.ViewGroup
 import com.yzq.application.AppManager
 import com.yzq.application.DefaultActivityLifecycleCallbacks
@@ -17,6 +18,9 @@ class FloatingViewManager private constructor(
     private val blackList: MutableList<Class<*>> = mutableListOf(),
     private val floatingViewConfig: FloatingViewConfig,
 ) : DefaultActivityLifecycleCallbacks {
+
+
+    private var currentActivity: Activity? = null
 
     private val floatingViewContainer: FloatingViewContainer by lazy(LazyThreadSafetyMode.SYNCHRONIZED) {
         val container = FloatingViewContainer()
@@ -49,11 +53,16 @@ class FloatingViewManager private constructor(
         if (blackList.contains(activity::class.java)) {
             return
         }
-        //先移除
-        detach()
+
+        //如果当前页面已经是悬浮窗所在页面，则不再添加
+        if (currentActivity == activity && floatingViewContainer.parent != null) {
+            return
+        }
+
         floatingViewContainer.alpha = 0f
         activity.rootContainer()?.addView(floatingViewContainer)
-        floatingViewContainer.animate().alpha(1f).setDuration(300).start()
+        floatingViewContainer.animate().alpha(1f).setDuration(200).start()
+        currentActivity = activity
 
     }
 
@@ -65,12 +74,26 @@ class FloatingViewManager private constructor(
         }
     }
 
-    override fun onActivityResumed(activity: Activity) {
+    override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
+        super.onActivityCreated(activity, savedInstanceState)
         attach(activity)
     }
 
+    override fun onActivityResumed(activity: Activity) {
+        super.onActivityResumed(activity)
+        attach(activity)
+    }
+
+
     override fun onActivityPaused(activity: Activity) {
+        super.onActivityPaused(activity)
         detach()
+    }
+
+    override fun onActivityDestroyed(activity: Activity) {
+        if (activity == startPage) {
+            AppManager.removeActivityLifecycleCallbacks(this)
+        }
     }
 
 

@@ -49,7 +49,9 @@ class MainActivity : AppCompatActivity() {
             bottomMargin(100)
             leftMargin(30)
 //            marginEdge(30)
-        }.globalShow(true).addBlackList(SecondActivity::class.java).build()
+        }.globalShow(true)
+//            .addBlackList(SecondActivity::class.java)
+            .build()
             .setFloatingViewListener(object : FloatingViewListener {
                 override fun onClick() {
                     Logger.it(TAG, "floatview onClick")
