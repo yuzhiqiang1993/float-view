@@ -2,6 +2,7 @@ package com.yzq.floating_view
 
 import android.content.Context
 import android.util.AttributeSet
+import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewConfiguration
@@ -11,15 +12,19 @@ import com.yzq.application.AppContext
 
 
 /**
- * @description: 悬浮视图容器
- * @author : yuzhiqiang
+ * 悬浮视图容器
+ * 
+ * 支持拖动、贴边、视图切换等功能
+ * 
+ * @author yuzhiqiang
  */
 internal class FloatingViewContainer @JvmOverloads constructor(
     context: Context = AppContext, attrs: AttributeSet? = null, defStyleAttr: Int = 0
 ) : FrameLayout(context, attrs, defStyleAttr), FloatingViewListener {
 
     companion object {
-        const val TAG = "FloatingViewContainer"
+        private const val TAG = "FloatingViewContainer"
+        private const val ANIMATION_DURATION_MS = 200L
     }
 
     private var parentWidth: Float = 0f//父视图的宽度
@@ -78,6 +83,8 @@ internal class FloatingViewContainer @JvmOverloads constructor(
 
     /**
      * 设置悬浮视图监听器
+     * 
+     * @param listener 悬浮视图监听器
      */
     fun setFloatingViewListener(listener: FloatingViewListener) {
         this.floatingViewListener = listener
@@ -85,6 +92,8 @@ internal class FloatingViewContainer @JvmOverloads constructor(
 
     /**
      * 设置是否可拖动
+     * 
+     * @param draggable 是否可拖动
      */
     fun draggable(draggable: Boolean) {
         this.draggable = draggable
@@ -92,6 +101,8 @@ internal class FloatingViewContainer @JvmOverloads constructor(
 
     /**
      * 设置是否自动贴边
+     * 
+     * @param autoMoveToEdge 是否自动贴边
      */
     fun autoMoveToEdge(autoMoveToEdge: Boolean) {
         this.autoMoveToEdge = autoMoveToEdge
@@ -99,8 +110,8 @@ internal class FloatingViewContainer @JvmOverloads constructor(
 
     /**
      * 设置边缘的边距
-     * @param marginEdge Int
-     * @return FloatingViewContainer
+     * 
+     * @param marginEdge 边缘的边距
      */
     fun marginEdge(marginEdge: Int) {
         this.marginEdge = marginEdge
@@ -108,6 +119,9 @@ internal class FloatingViewContainer @JvmOverloads constructor(
 
     /**
      * 触摸事件处理
+     * 
+     * @param event 触摸事件
+     * @return true 表示事件已处理
      */
     override fun onTouchEvent(event: MotionEvent): Boolean {
         updateParentContainerSize()
@@ -128,23 +142,37 @@ internal class FloatingViewContainer @JvmOverloads constructor(
         return true
     }
 
+    /**
+     * 处理移动事件
+     * 
+     * @param event 触摸事件
+     */
     private fun handleActionMove(event: MotionEvent) {
-        if (!draggable) return
-        val desX = viewX + (event.rawX - touchX)
-        val desY = viewY + (event.rawY - touchY)
-        this.x = desX.coerceIn(0f, parentWidth - width)
-        this.y = desY.coerceIn(0f, parentHeight - height)
+        if (!draggable) {
+            Log.d(TAG, "不可拖动，忽略移动事件")
+            return
+        }
+        val destinationX = viewX + (event.rawX - touchX)
+        val destinationY = viewY + (event.rawY - touchY)
+        this.x = destinationX.coerceIn(0f, parentWidth - width)
+        this.y = destinationY.coerceIn(0f, parentHeight - height)
         showMoveView()
     }
 
+    /**
+     * 处理抬起事件
+     */
     private fun handleActionUp() {
         if (isOnClickEvent()) {
+            Log.d(TAG, "触发点击事件")
             floatingViewListener?.onClick()
         }
         if (autoMoveToEdge) {
             if (autoShowEdgeView) {
+                Log.d(TAG, "自动贴边并显示贴边视图")
                 switchToEdgeView()
             } else {
+                Log.d(TAG, "自动贴边并显示内容视图")
                 switchToContentView()
             }
 
@@ -154,7 +182,8 @@ internal class FloatingViewContainer @JvmOverloads constructor(
 
     /**
      * 处理按下事件,记录下当前位置以及时间
-     * @param event MotionEvent
+     * 
+     * @param event 触摸事件
      */
     private fun handleActionDown(event: MotionEvent) {
         viewX = x
@@ -165,36 +194,55 @@ internal class FloatingViewContainer @JvmOverloads constructor(
     }
 
 
+    /**
+     * 设置贴边时是否自动显示贴边视图
+     * 
+     * @param autoShowEdgeView 是否自动显示贴边视图
+     */
     fun autoShowEdgeView(autoShowEdgeView: Boolean) {
         this.autoShowEdgeView = autoShowEdgeView
     }
 
+    /**
+     * 显示移动时的视图
+     */
     private fun showMoveView() {
         contentView?.visibility = View.VISIBLE
         edgeView?.visibility = View.INVISIBLE
-        moveView?.let {
-            it.visibility = View.VISIBLE
+        moveView?.let { view ->
+            view.visibility = View.VISIBLE
             contentView?.visibility = View.INVISIBLE
         }
 
     }
 
 
-    private fun updateParentContainerSize() {
+    /**
+     * 更新父容器尺寸
+     * 
+     * @return 更新结果
+     */
+    private fun updateParentContainerSize(): Result<Unit> {
         //获取父视图的宽高
-        runCatching {
+        return try {
             parentWidth = (parent as ViewGroup).width.toFloat()
             parentHeight = (parent as ViewGroup).height.toFloat()
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Log.e(TAG, "获取父视图宽高失败", e)
+            Result.failure(e)
         }
-
     }
 
     /**
      * 判断是否是点击事件
+     * 
+     * @return true 表示是点击事件
      */
     private fun isOnClickEvent(): Boolean {
         val tapTimeout = ViewConfiguration.getTapTimeout().toLong()
-        return System.currentTimeMillis() - lastTouchDownTime < tapTimeout
+        val elapsedTime = System.currentTimeMillis() - lastTouchDownTime
+        return elapsedTime < tapTimeout
     }
 
     /**
@@ -204,27 +252,29 @@ internal class FloatingViewContainer @JvmOverloads constructor(
         updateParentContainerSize()
 
         if (edgeView == null) {
+            Log.d(TAG, "未设置贴边视图，切换到内容视图")
             switchToContentView()
             return
         }
-        edgeView?.let {
+        edgeView?.let { edge ->
             // 计算贴边视图应该显示的宽度
-            val edgeViewScaleWidth = (it.width * edgeViewScale).toInt()
+            val edgeViewScaleWidth = (edge.width * edgeViewScale).toInt()
             //是否是左边
-            val nearestLeft = this.x < parentWidth / 2
+            val isNearLeftEdge = this.x < parentWidth / 2
             // 计算最终的x坐标
-            val moveDistance = if (nearestLeft) {
+            val moveDistance: Float
+            if (isNearLeftEdge) {
                 //如果是左边的话，那么移动的坐标就是负值，这个值实际上就是贴边视图的宽度减去 edgeViewScaleWidth 的值，也就是最终会显示edgeViewScaleWidth的宽度
-                -(it.width - edgeViewScaleWidth)
+                moveDistance = -(edge.width - edgeViewScaleWidth).toFloat()
             } else {
                 //如果是右边，那么移动的距离屏幕的宽度
-                parentWidth - edgeViewScaleWidth
+                moveDistance = (parentWidth - edgeViewScaleWidth).toFloat()
 
-            }.toFloat()
+            }
 
             move(moveDistance, y)
             // 隐藏内容视图和移动时视图
-            edgeView?.visibility = View.VISIBLE
+            edge.visibility = View.VISIBLE
             contentView?.visibility = View.INVISIBLE
             moveView?.visibility = View.INVISIBLE
         }
@@ -238,9 +288,14 @@ internal class FloatingViewContainer @JvmOverloads constructor(
      */
     internal fun switchToContentView() {
         updateParentContainerSize()
+        Log.d(TAG, "切换到内容视图")
         //计算移动的距离
-        val moveDistance =
-            if (this.x < parentWidth / 2) marginEdge.toFloat() else parentWidth - width - marginEdge
+        val moveDistance: Float
+        if (this.x < parentWidth / 2) {
+            moveDistance = marginEdge.toFloat()
+        } else {
+            moveDistance = parentWidth - width - marginEdge
+        }
 
         move(moveDistance, y)
 
@@ -250,13 +305,22 @@ internal class FloatingViewContainer @JvmOverloads constructor(
     }
 
     /**
-     * 移动视图
+     * 移动视图到目标位置
+     * 
+     * @param destX 目标X坐标
+     * @param destY 目标Y坐标
      */
     private fun move(destX: Float, destY: Float) {
         //从当前位置移动到目标位置，带有动画效果
-        this.animate().setDuration(200).x(destX).y(destY).start()
-        this.x = destX
-        this.y = destY
+        this.animate().setDuration(ANIMATION_DURATION_MS).x(destX).y(destY).start()
+    }
+
+    /**
+     * 点击事件（FloatingViewListener 接口实现）
+     */
+    override fun onClick() {
+        // 默认实现，如果有需要可以添加逻辑
+        floatingViewListener?.onClick()
     }
 
 

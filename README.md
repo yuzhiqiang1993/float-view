@@ -1,13 +1,453 @@
 # FloatView
 
-Android端浮动视图组件，具备以下功能
+[![Maven Central](https://img.shields.io/maven-central/v/com.xeonyu/float-view.svg)](https://search.maven.org/artifact/com.xeonyu/float-view)
+[![API](https://img.shields.io/badge/API-21%2B-brightgreen.svg)](https://android-arsenal.com/api?level=21)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
+[![Kotlin](https://img.shields.io/badge/Kotlin-1.8-blue.svg)](https://kotlinlang.org)
 
-1. 自定义内容视图，可选移动时显示的视图，可选贴边时显示的视图
-2. 可配置是否支持拖动
-3. 可配置是否自动贴边
-4. 可配置贴边视图显示的出来的比例
-5. 可配置是否全局显示
-6. 可配置黑名单，不显示在指定的页面中
-7. 可手动切换显示和隐藏
-8. 可手动切换内容视图和贴边视图
+一个功能强大、简单易用的 Android 浮动视图组件。支持拖动、贴边、视图切换等丰富的功能，提供了完整的生命周期管理和事件回调机制。
 
+## ✨ 功能特点
+
+- 🎨 **三视图模式**: 支持内容视图、移动视图、贴边视图三种模式，可根据不同场景自定义显示
+- 🖱️ **拖动支持**: 灵活配置是否支持拖动，满足不同交互需求
+- 🧲 **自动贴边**: 支持自动吸附到屏幕边缘，提升用户体验
+- 📐 **自定义比例**: 可配置贴边视图的显示比例，实现部分显示效果
+- 🌐 **全局显示**: 支持跨页面全局显示，自动管理生命周期
+- 🚫 **黑名单机制**: 可配置黑名单，在指定页面不显示悬浮视图
+- 🎛️ **手动控制**: 支持手动切换显示/隐藏、内容视图/贴边视图
+- 🎯 **事件回调**: 完善的点击事件监听，方便业务处理
+- 🔄 **动画效果**: 内置流畅的过渡动画，提升视觉效果
+- 📱 **兼容性好**: 支持 API 21+ (Android 5.0+)，覆盖大部分设备
+
+## 📦 安装
+
+### Gradle (Kotlin DSL)
+
+在模块的 `build.gradle.kts` 文件中添加依赖：
+
+```kotlin
+dependencies {
+    implementation("com.xeonyu:float-view:1.0.0")
+}
+```
+
+### Gradle (Groovy)
+
+在模块的 `build.gradle` 文件中添加依赖：
+
+```groovy
+dependencies {
+    implementation 'com.xeonyu:float-view:1.0.0'
+}
+```
+
+## 🚀 快速开始
+
+### 最简单的用法
+
+```kotlin
+// 1. 创建悬浮视图管理器
+FloatingViewManager.Builder(this)
+    .floatingViewConfig {
+        contentView(R.layout.layout_float_view)
+    }
+    .globalShow(true)  // 全局显示
+    .build()
+    .show()
+```
+
+### 完整示例
+
+```kotlin
+class MainActivity : AppCompatActivity() {
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        // 创建悬浮视图布局
+        val floatViewBinding = LayoutFloatViewBinding.inflate(LayoutInflater.from(this))
+
+        // 设置内容
+        floatViewBinding.contentView.setImageResource(R.drawable.icon_float)
+
+        // 创建并显示悬浮视图
+        FloatingViewManager.Builder(this)
+            .floatingViewConfig {
+                // 必需：设置内容视图
+                contentView(floatViewBinding.contentView)
+                
+                // 可选：设置移动时显示的视图
+                moveView(floatViewBinding.moveView)
+                
+                // 可选：设置贴边时显示的视图
+                edgeView(floatViewBinding.edgeView)
+                
+                // 配置贴边视图显示比例 (0.0-1.0)
+                edgeViewScale(0.7f)
+                
+                // 是否可拖动
+                draggable(true)
+                
+                // 是否自动贴边
+                autoMoveToEdge(true)
+                
+                // 贴边后是否自动显示贴边视图
+                autoShowEdgeView(true)
+                
+                // 设置布局参数
+                width(100)
+                height(100)
+                gravity(Gravity.START or Gravity.BOTTOM)
+                bottomMargin(100)
+                leftMargin(30)
+            }
+            .globalShow(true)  // 全局显示，自动管理生命周期
+            // 可选：添加黑名单
+            .addBlackList(SecondActivity::class.java, ThirdActivity::class.java)
+            .build()
+            .setFloatingViewListener(object : FloatingViewListener {
+                override fun onClick() {
+                    // 处理点击事件
+                    Toast.makeText(this@MainActivity, "悬浮视图被点击", Toast.LENGTH_SHORT).show()
+                }
+            })
+            .show()
+    }
+}
+```
+
+## 📖 详细使用说明
+
+### 1. 基础用法（单页面显示）
+
+适用于只需要在单个页面显示悬浮视图的场景：
+
+```kotlin
+val floatingViewManager = FloatingViewManager.Builder(this)
+    .floatingViewConfig {
+        contentView(R.layout.layout_float_view)
+    }
+    .globalShow(false)  // 不全局显示
+    .build()
+
+// 显示
+binding.btnShow.setOnClickListener {
+    floatingViewManager.show()
+}
+
+// 隐藏
+binding.btnHide.setOnClickListener {
+    floatingViewManager.hide()
+}
+
+// 切换到贴边视图
+binding.btnSwitchToEdge.setOnClickListener {
+    floatingViewManager.switchToEdgeView()
+}
+
+// 切换到内容视图
+binding.btnSwitchToContent.setOnClickListener {
+    floatingViewManager.switchToContentView()
+}
+```
+
+### 2. 全局显示（跨页面）
+
+适用于需要在多个页面显示悬浮视图的场景：
+
+```kotlin
+FloatingViewManager.Builder(this)
+    .floatingViewConfig {
+        contentView(R.layout.layout_float_view)
+    }
+    .globalShow(true)  // 全局显示，自动管理生命周期
+    // 可选：添加黑名单，在指定页面不显示
+    .addBlackList(SplashActivity::class.java)
+    .build()
+    .show()
+```
+
+### 3. 自定义三种视图
+
+悬浮视图支持三种视图模式：
+
+```kotlin
+FloatingViewManager.Builder(this)
+    .floatingViewConfig {
+        // 内容视图：默认显示的视图
+        contentView(floatViewBinding.contentView)
+        
+        // 移动视图：拖动时显示的视图（可选）
+        moveView(floatViewBinding.moveView)
+        
+        // 贴边视图：贴边时显示的视图（可选）
+        edgeView(floatViewBinding.edgeView)
+        
+        // 贴边视图显示比例（只对 edgeView 有效）
+        edgeViewScale(0.7f)  // 显示 70%
+    }
+    .build()
+```
+
+**视图切换逻辑**：
+- 静止状态：显示 `contentView`
+- 拖动中：显示 `moveView`（如果设置了）
+- 贴边后：显示 `edgeView`（如果设置了）
+
+### 4. 黑名单机制
+
+在全局显示模式下，可以指定不显示悬浮视图的页面：
+
+```kotlin
+FloatingViewManager.Builder(this)
+    .floatingViewConfig {
+        contentView(R.layout.layout_float_view)
+    }
+    .globalShow(true)
+    .addBlackList(
+        SplashActivity::class.java,     // 启动页不显示
+        LoginActivity::class.java,       // 登录页不显示
+        FullScreenActivity::class.java   // 全屏页面不显示
+    )
+    .build()
+    .show()
+```
+
+### 5. 点击事件监听
+
+```kotlin
+FloatingViewManager.Builder(this)
+    .floatingViewConfig {
+        contentView(R.layout.layout_float_view)
+    }
+    .build()
+    .setFloatingViewListener(object : FloatingViewListener {
+        override fun onClick() {
+            // 处理点击事件
+            val intent = Intent(this@MainActivity, TargetActivity::class.java)
+            startActivity(intent)
+        }
+    })
+    .show()
+```
+
+### 6. 手动控制显示/隐藏
+
+```kotlin
+// 创建悬浮视图管理器
+val floatingViewManager = FloatingViewManager.Builder(this)
+    .floatingViewConfig {
+        contentView(R.layout.layout_float_view)
+    }
+    .globalShow(false)  // 手动控制模式
+    .build()
+
+// 显示悬浮视图
+floatingViewManager.show()
+
+// 隐藏悬浮视图
+floatingViewManager.hide()
+```
+
+## 🔧 API 文档
+
+### FloatingViewManager.Builder
+
+#### 构造方法
+
+```kotlin
+Builder(activity: Activity)
+```
+
+#### 配置方法
+
+| 方法 | 说明 | 必需 |
+|------|------|------|
+| `floatingViewConfig(block)` | 使用 Lambda 配置悬浮视图 | ✅ |
+| `globalShow(globalShow: Boolean)` | 设置是否全局显示 | ❌ |
+| `addBlackList(vararg clazz: Class<*>)` | 添加黑名单 Activity | ❌ |
+| `build()` | 构建悬浮视图管理器 | ✅ |
+
+### FloatingViewConfig
+
+#### 视图配置
+
+| 方法 | 说明 | 必需 |
+|------|------|------|
+| `contentView(view: View)` | 设置内容视图（通过 View） | ✅ |
+| `contentView(@LayoutRes layoutResId: Int)` | 设置内容视图（通过布局 ID） | ✅ |
+| `moveView(view: View)` | 设置移动视图（通过 View） | ❌ |
+| `moveView(@LayoutRes layoutResId: Int)` | 设置移动视图（通过布局 ID） | ❌ |
+| `edgeView(view: View)` | 设置贴边视图（通过 View） | ❌ |
+| `edgeView(@LayoutRes layoutResId: Int)` | 设置贴边视图（通过布局 ID） | ❌ |
+
+#### 行为配置
+
+| 方法 | 说明 | 默认值 |
+|------|------|--------|
+| `draggable(draggable: Boolean)` | 设置是否可拖动 | `true` |
+| `autoMoveToEdge(autoMoveToEdge: Boolean)` | 设置是否自动贴边 | `true` |
+| `autoShowEdgeView(autoShowEdgeView: Boolean)` | 设置贴边后是否自动显示贴边视图 | `true` |
+| `edgeViewScale(scale: Float)` | 设置贴边视图的显示比例 (0.0-1.0) | `1.0f` |
+
+#### 布局配置
+
+| 方法 | 说明 | 默认值 |
+|------|------|--------|
+| `width(width: Int)` | 设置宽度 | `WRAP_CONTENT` |
+| `height(height: Int)` | 设置高度 | `WRAP_CONTENT` |
+| `gravity(@GravityInt gravity: Int)` | 设置重力 | `BOTTOM or END` |
+| `topMargin(topMargin: Int)` | 设置顶部边距 | `0` |
+| `bottomMargin(bottomMargin: Int)` | 设置底部边距 | `0` |
+| `leftMargin(leftMargin: Int)` | 设置左边距 | `0` |
+| `rightMargin(rightMargin: Int)` | 设置右边距 | `0` |
+| `marginEdge(marginEdge: Int)` | 设置内容视图贴边时距离屏幕边缘的距离 | `0` |
+
+### FloatingViewManager
+
+| 方法 | 说明 |
+|------|------|
+| `show()` | 显示悬浮视图 |
+| `hide()` | 隐藏悬浮视图 |
+| `switchToEdgeView()` | 切换到贴边视图 |
+| `switchToContentView()` | 切换到内容视图 |
+| `setFloatingViewListener(listener: FloatingViewListener)` | 设置点击事件监听器 |
+
+### FloatingViewListener
+
+```kotlin
+interface FloatingViewListener {
+    fun onClick()  // 点击事件回调
+}
+```
+
+## 🎯 最佳实践
+
+### 1. 使用 Lottie 动画
+
+推荐使用 Lottie 动画提升视觉效果：
+
+```kotlin
+val floatViewBinding = LayoutFloatViewBinding.inflate(LayoutInflater.from(this))
+
+// 设置 Lottie 动画
+floatViewBinding.contentView.setAnimationFromUrl("https://assets7.lottiefiles.com/packages/lf20_5lTxAupekw.json")
+floatViewBinding.contentView.setPadding(0)
+
+FloatingViewManager.Builder(this)
+    .floatingViewConfig {
+        contentView(floatViewBinding.contentView)
+    }
+    .globalShow(true)
+    .build()
+    .show()
+```
+
+### 2. 合理使用黑名单
+
+在全局显示模式下，建议对以下页面使用黑名单：
+- 启动页
+- 登录页
+- 全屏视频播放页
+- 支付页
+
+```kotlin
+FloatingViewManager.Builder(this)
+    .floatingViewConfig {
+        contentView(R.layout.layout_float_view)
+    }
+    .globalShow(true)
+    .addBlackList(
+        SplashActivity::class.java,
+        LoginActivity::class.java,
+        FullScreenVideoActivity::class.java,
+        PaymentActivity::class.java
+    )
+    .build()
+    .show()
+```
+
+### 3. 选择合适的显示比例
+
+贴边视图的显示比例建议：
+- `0.5f` - 半边显示（节省空间）
+- `0.7f` - 常用比例（平衡显示和空间）
+- `1.0f` - 完整显示（最大可见性）
+
+```kotlin
+FloatingViewManager.Builder(this)
+    .floatingViewConfig {
+        contentView(floatViewBinding.contentView)
+        edgeView(floatViewBinding.edgeView)
+        edgeViewScale(0.7f)  // 推荐值
+    }
+    .build()
+    .show()
+```
+
+### 4. 合理设置边距
+
+根据屏幕尺寸和内容大小，合理设置边距：
+
+```kotlin
+FloatingViewManager.Builder(this)
+    .floatingViewConfig {
+        contentView(floatViewBinding.contentView)
+        gravity(Gravity.START or Gravity.BOTTOM)
+        bottomMargin(100)  // 底部边距，避免遮挡底部导航
+        leftMargin(30)    // 左侧边距，避免贴边完全隐藏
+    }
+    .build()
+    .show()
+```
+
+### 5. 内存管理
+
+对于复杂的悬浮视图，建议在不需要时手动隐藏，释放内存：
+
+```kotlin
+override fun onDestroy() {
+    super.onDestroy()
+    // 手动隐藏悬浮视图
+    floatingViewManager.hide()
+}
+```
+
+## 📱 系统要求
+
+- **最低 SDK**: API 21 (Android 5.0)
+- **目标 SDK**: API 33+ (Android 13+)
+- **Kotlin**: 1.8+
+- **Gradle**: 8.0+
+
+## 🔄 更新日志
+
+### v1.0.0 (2025-01-07)
+
+- ✨ 首次发布
+- 🎨 支持三视图模式（内容视图、移动视图、贴边视图）
+- 🖱️ 支持拖动和自动贴边
+- 🌐 支持全局显示和黑名单机制
+- 🎯 完善的事件回调机制
+- 📐 支持自定义贴边视图显示比例
+- 🔄 内置流畅的过渡动画
+- 📝 完善的 API 文档和示例代码
+- 🔧 符合 Android Kotlin 代码规范
+- 📱 支持 API 21+
+
+## 🤝 贡献
+
+欢迎贡献代码！如果你发现了 bug 或者有新的功能建议，请：
+
+1. [创建 Issue](https://github.com/yuzhiqiang1993/float-view/issues)
+2. [创建 Pull Request](https://github.com/yuzhiqiang1993/float-view/pulls)
+
+## 📄 许可证
+
+本项目采用 [Apache License 2.0](LICENSE) 许可证。
+
+---
+
+
+如果这个项目对您有帮助，请给个 ⭐️ Star 支持一下！

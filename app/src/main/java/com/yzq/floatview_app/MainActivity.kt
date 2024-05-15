@@ -13,31 +13,47 @@ import com.yzq.floatview_app.databinding.ActivityMainBinding
 import com.yzq.floatview_app.databinding.LayoutFloatViewBinding
 import com.yzq.logger.Logger
 
+/**
+ * 主页面
+ * 
+ * 演示悬浮视图的基本用法：
+ * - 全局显示
+ * - 自动贴边
+ * - 点击事件监听
+ * 
+ * @author yuzhiqiang
+ */
 class MainActivity : AppCompatActivity() {
 
     private val binding by viewbind(ActivityMainBinding::inflate)
 
-
-    private val TAG = "MainActivity"
-
+    companion object {
+        private const val TAG = "MainActivity"
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        Logger.d(TAG, "onCreate")
 
+        // 设置跳转按钮点击事件
         binding.btnSkip.setOnClickListener {
+            Logger.d(TAG, "跳转到 SecondActivity")
             SecondActivity.start(this)
         }
 
+        // 创建悬浮视图布局
         val floatViewBinding = LayoutFloatViewBinding.inflate(LayoutInflater.from(AppContext))
 
-        floatViewBinding.contentView.setAnimationFromUrl("https://assets7.lottiefiles.com/packages/lf20_5lTxAupekw.json")
-        floatViewBinding.edgeView.setAnimationFromUrl("https://assets7.lottiefiles.com/packages/lf20_5lTxAupekw.json")
+        // 设置 Lottie 动画 URL
+        val animationUrl = "https://lottie.host/60672cb1-7f81-426f-97ce-eb8f40fbe33c/zVu7nmZ5zx.lottie"
+        floatViewBinding.contentView.setAnimationFromUrl(animationUrl)
+        floatViewBinding.edgeView.setAnimationFromUrl(animationUrl)
 
+        // 设置内边距为 0
         floatViewBinding.contentView.setPadding(0)
         floatViewBinding.edgeView.setPadding(0)
 
-
-
+        // 创建并显示悬浮视图
         FloatingViewManager.Builder(this).floatingViewConfig {
             contentView(floatViewBinding.contentView)
             edgeView(floatViewBinding.edgeView)
@@ -48,17 +64,17 @@ class MainActivity : AppCompatActivity() {
             gravity(Gravity.START or Gravity.BOTTOM)
             bottomMargin(100)
             leftMargin(30)
-//            marginEdge(30)
-        }.globalShow(true).addBlackList(SecondActivity::class.java).build()
+        }.globalShow(true)
+            .build()
             .setFloatingViewListener(object : FloatingViewListener {
                 override fun onClick() {
-                    Logger.it(TAG, "floatview onClick")
+                    Logger.d(TAG, "悬浮视图被点击")
                 }
+            })
+            .show()
 
-            }).show()
-
+        Logger.d(TAG, "悬浮视图已创建并显示")
 
     }
-
 
 }
