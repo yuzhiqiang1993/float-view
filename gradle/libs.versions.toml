@@ -20,7 +20,7 @@ minSdk = "23"
 #*/
 targetSdk = "33"
 #AGP的版本
-agp = "8.1.0"
+agp = "8.2.2"
 
 # AndroidX相关的稳定版本，组件依赖时使用
 androidxAppcompatStable = "1.3.1"
@@ -76,7 +76,7 @@ kotlinxSerializationJson = "1.6.3"
 #三方库
 theRouter = "1.2.2"
 benManesVersion = "0.51.0"
-vanniktechPublish = "0.28.0"
+vanniktechPublish = "0.35.0"
 okhttp = "4.12.0"
 retrofit = "2.11.0"
 retrofitKotlinxSerializationJson = "1.0.0"
