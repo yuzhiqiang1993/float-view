@@ -13,16 +13,6 @@ import com.yzq.floatview_app.databinding.ActivityMainBinding
 import com.yzq.floatview_app.databinding.LayoutFloatViewBinding
 import com.yzq.logger.Logger
 
-/**
- * 主页面
- * 
- * 演示悬浮视图的基本用法：
- * - 全局显示
- * - 自动贴边
- * - 点击事件监听
- * 
- * @author yuzhiqiang
- */
 class MainActivity : AppCompatActivity() {
 
     private val binding by viewbind(ActivityMainBinding::inflate)
