@@ -23,13 +23,15 @@
 
 ## 📦 安装
 
+请在 [Maven Central](https://search.maven.org/artifact/com.xeonyu/float-view) 查看最新版本：[![Maven Central](https://img.shields.io/maven-central/v/com.xeonyu/float-view.svg)](https://search.maven.org/artifact/com.xeonyu/float-view)
+
 ### Gradle (Kotlin DSL)
 
 在模块的 `build.gradle.kts` 文件中添加依赖：
 
 ```kotlin
 dependencies {
-    implementation("com.xeonyu:float-view:1.0.0")
+    implementation("com.xeonyu:float-view:x.x.x") // 请使用最新版本号替换 x.x.x
 }
 ```
 
@@ -39,7 +41,7 @@ dependencies {
 
 ```groovy
 dependencies {
-    implementation 'com.xeonyu:float-view:1.0.0'
+    implementation 'com.xeonyu:float-view:x.x.x' // 请使用最新版本号替换 x.x.x
 }
 ```
 
