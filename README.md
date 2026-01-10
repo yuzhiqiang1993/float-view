@@ -52,8 +52,8 @@ dependencies {
 FloatingViewManager.Builder(this)
     .floatingViewConfig {
         contentView(R.layout.layout_float_view)
+        globalShow(true)  // 全局显示
     }
-    .globalShow(true)  // 全局显示
     .build()
     .show()
 ```
@@ -111,10 +111,12 @@ class MainActivity : AppCompatActivity() {
                 gravity(Gravity.START or Gravity.BOTTOM)
                 bottomMargin(100)
                 leftMargin(30)
+                
+                // 全局显示配置
+                globalShow(true)  // 全局显示，自动管理生命周期
+                // 可选：添加黑名单
+                addBlackList(SecondActivity::class.java, ThirdActivity::class.java)
             }
-            .globalShow(true)  // 全局显示，自动管理生命周期
-            // 可选：添加黑名单
-            .addBlackList(SecondActivity::class.java, ThirdActivity::class.java)
             .build()
             .setFloatingViewListener(object : FloatingViewListener {
                 override fun onClick() {
@@ -137,8 +139,8 @@ class MainActivity : AppCompatActivity() {
 val floatingViewManager = FloatingViewManager.Builder(this)
     .floatingViewConfig {
         contentView(R.layout.layout_float_view)
+        globalShow(false)  // 不全局显示
     }
-    .globalShow(false)  // 不全局显示
     .build()
 
 // 显示
@@ -170,10 +172,10 @@ binding.btnSwitchToContent.setOnClickListener {
 FloatingViewManager.Builder(this)
     .floatingViewConfig {
         contentView(R.layout.layout_float_view)
+        globalShow(true)  // 全局显示，自动管理生命周期
+        // 可选：添加黑名单，在指定页面不显示
+        addBlackList(SplashActivity::class.java)
     }
-    .globalShow(true)  // 全局显示，自动管理生命周期
-    // 可选：添加黑名单，在指定页面不显示
-    .addBlackList(SplashActivity::class.java)
     .build()
     .show()
 ```
@@ -213,13 +215,13 @@ FloatingViewManager.Builder(this)
 FloatingViewManager.Builder(this)
     .floatingViewConfig {
         contentView(R.layout.layout_float_view)
+        globalShow(true)
+        addBlackList(
+            SplashActivity::class.java,     // 启动页不显示
+            LoginActivity::class.java,       // 登录页不显示
+            FullScreenActivity::class.java   // 全屏页面不显示
+        )
     }
-    .globalShow(true)
-    .addBlackList(
-        SplashActivity::class.java,     // 启动页不显示
-        LoginActivity::class.java,       // 登录页不显示
-        FullScreenActivity::class.java   // 全屏页面不显示
-    )
     .build()
     .show()
 ```
@@ -249,8 +251,8 @@ FloatingViewManager.Builder(this)
 val floatingViewManager = FloatingViewManager.Builder(this)
     .floatingViewConfig {
         contentView(R.layout.layout_float_view)
+        globalShow(false)  // 手动控制模式
     }
-    .globalShow(false)  // 手动控制模式
     .build()
 
 // 显示悬浮视图
@@ -325,8 +327,6 @@ Builder(context: Context)
 |------|------|------|
 | `tag(tag: String)` | 设置悬浮窗标签（用于多实例管理） | ❌ |
 | `floatingViewConfig(block)` | 使用 Lambda 配置悬浮视图 | ✅ |
-| `globalShow(globalShow: Boolean)` | 设置是否全局显示 | ❌ |
-| `addBlackList(vararg clazz: Class<*>)` | 添加黑名单 Activity | ❌ |
 | `build()` | 构建悬浮视图管理器 | ✅ |
 
 ### FloatingViewConfig
@@ -341,6 +341,8 @@ Builder(context: Context)
 | `moveView(@LayoutRes layoutResId: Int)` | 设置移动视图（通过布局 ID） | ❌ |
 | `edgeView(view: View)` | 设置贴边视图（通过 View） | ❌ |
 | `edgeView(@LayoutRes layoutResId: Int)` | 设置贴边视图（通过布局 ID） | ❌ |
+| `globalShow(globalShow: Boolean)` | 设置是否全局显示 | ❌ |
+| `addBlackList(vararg clazz: Class<*>)` | 添加黑名单 Activity | ❌ |
 
 #### 行为配置
 
@@ -371,6 +373,8 @@ Builder(context: Context)
 | `show()` | 显示悬浮视图 |
 | `hide()` | 隐藏悬浮视图 |
 | `destroy()` | 销毁悬浮视图并释放资源 |
+| `FloatingViewManager.get(tag)` | 根据 Tag 获取实例 (静态方法) |
+| `FloatingViewManager.destroy(tag)` | 根据 Tag 销毁实例 (静态方法) |
 | `switchToEdgeView()` | 切换到贴边视图 |
 | `switchToContentView()` | 切换到内容视图 |
 | `setFloatingViewListener(listener: FloatingViewListener)` | 设置点击事件监听器 |
@@ -399,8 +403,8 @@ floatViewBinding.contentView.setPadding(0)
 FloatingViewManager.Builder(this)
     .floatingViewConfig {
         contentView(floatViewBinding.contentView)
+        globalShow(true)
     }
-    .globalShow(true)
     .build()
     .show()
 ```
@@ -417,14 +421,14 @@ FloatingViewManager.Builder(this)
 FloatingViewManager.Builder(this)
     .floatingViewConfig {
         contentView(R.layout.layout_float_view)
+        globalShow(true)
+        addBlackList(
+            SplashActivity::class.java,
+            LoginActivity::class.java,
+            FullScreenVideoActivity::class.java,
+            PaymentActivity::class.java
+        )
     }
-    .globalShow(true)
-    .addBlackList(
-        SplashActivity::class.java,
-        LoginActivity::class.java,
-        FullScreenVideoActivity::class.java,
-        PaymentActivity::class.java
-    )
     .build()
     .show()
 ```
