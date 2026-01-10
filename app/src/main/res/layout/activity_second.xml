@@ -1,37 +1,79 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.appcompat.widget.LinearLayoutCompat xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:gravity="center_horizontal"
     android:orientation="vertical"
+    android:padding="24dp"
     tools:context=".SecondActivity">
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="32dp"
+        android:layout_marginTop="32dp"
+        android:text="局部悬浮窗控制台"
+        android:textColor="@android:color/black"
+        android:textSize="24sp"
+        android:textStyle="bold" />
 
-    <androidx.appcompat.widget.AppCompatButton
-        android:id="@+id/btn_show_float_view"
+    <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="显示悬浮窗" />
-
-
-    <androidx.appcompat.widget.AppCompatButton
-        android:id="@+id/btn_hide_float_view"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="隐藏悬浮窗" />
-
-    <androidx.appcompat.widget.AppCompatButton
-        android:id="@+id/btn_switch"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="切换view" />
-
-
-    <androidx.appcompat.widget.AppCompatTextView
-        android:id="@+id/tv_second"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
+        android:layout_marginBottom="16dp"
         android:gravity="center"
-        android:text="第二个页面" />
-</androidx.appcompat.widget.LinearLayoutCompat>
+        android:text="此页面演示 Activity 级别的悬浮窗管理\n离开此页面悬浮窗会自动销毁"
+        android:textColor="#666666" />
+
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <Button
+                android:id="@+id/btn_show_float_view"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="显示悬浮窗" />
+
+            <Button
+                android:id="@+id/btn_hide_float_view"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="隐藏悬浮窗" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginBottom="16dp"
+                android:layout_marginTop="16dp"
+                android:background="#EEEEEE" />
+
+            <Button
+                android:id="@+id/btn_add_half_hidden"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="添加半隐藏悬浮窗 (多实例演示)" />
+
+            <Button
+                android:id="@+id/btn_switch"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="切换内容/贴边视图" />
+
+        </LinearLayout>
+
+    </com.google.android.material.card.MaterialCardView>
+
+</LinearLayout>

@@ -46,7 +46,7 @@ dependencies {
     implementation(libs.xeonyu.logger)
     implementation(libs.androidx.activity.ktx)
     implementation(libs.lottie)
-    implementation(libs.brv)
+//    implementation(libs.brv)
 
     implementation(project(":floating-view"))
 }

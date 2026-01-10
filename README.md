@@ -19,6 +19,7 @@
 - 🎯 **事件回调**: 完善的点击事件监听，方便业务处理
 - 🔄 **动画效果**: 内置流畅的过渡动画，提升视觉效果
 - 📱 **兼容性好**: 支持 API 21+ (Android 5.0+)，覆盖大部分设备
+- 🧩 **多实例支持**: 支持同时显示多个悬浮窗，通过 Tag 区分管理
 
 ## 📦 安装
 
@@ -55,6 +56,15 @@ FloatingViewManager.Builder(this)
     .globalShow(true)  // 全局显示
     .build()
     .show()
+```
+
+### 开启调试日志
+
+库默认关闭日志输出，可在 Debug 模式下开启：
+
+```kotlin
+// 在 Application.onCreate() 中配置
+FloatViewLog.isLoggable = BuildConfig.DEBUG
 ```
 
 ### 完整示例
@@ -250,6 +260,55 @@ floatingViewManager.show()
 floatingViewManager.hide()
 ```
 
+### 7. 多悬浮窗支持
+
+通过设置 `tag`，可以创建和管理多个独立的悬浮窗实例：
+
+```kotlin
+// 创建第一个悬浮窗
+FloatingViewManager.Builder(this)
+    .tag("FLOAT_A")
+    .floatingViewConfig {
+        contentView(R.layout.layout_float_a)
+        leftMargin(0)
+    }
+    .build()
+    .show()
+
+// 创建第二个悬浮窗
+FloatingViewManager.Builder(this)
+    .tag("FLOAT_B")
+    .floatingViewConfig {
+        contentView(R.layout.layout_float_b)
+        rightMargin(0)
+    }
+    .build()
+    .show()
+```
+
+### 8. 自定义贴边距离与半隐藏效果
+
+通过 `marginEdge` 属性可以控制贴边时的偏移量。设置为负值可实现"半隐藏"效果：
+
+```kotlin
+FloatingViewManager.Builder(this)
+    .floatingViewConfig {
+        contentView(R.layout.layout_float_view) // 假设宽度为 60dp
+        
+        // 设置贴边后的距离
+        // 正值：距离边缘 10px
+        // marginEdge(10) 
+        
+        // 负值：实现半隐藏效果 (例如向外偏移 30px)
+        marginEdge(-30)
+        
+        // 配合 Gravity 使用初识位置
+        gravity(Gravity.END or Gravity.CENTER_VERTICAL)
+    }
+    .build()
+    .show()
+```
+
 ## 🔧 API 文档
 
 ### FloatingViewManager.Builder
@@ -257,13 +316,14 @@ floatingViewManager.hide()
 #### 构造方法
 
 ```kotlin
-Builder(activity: Activity)
+Builder(context: Context)
 ```
 
 #### 配置方法
 
 | 方法 | 说明 | 必需 |
 |------|------|------|
+| `tag(tag: String)` | 设置悬浮窗标签（用于多实例管理） | ❌ |
 | `floatingViewConfig(block)` | 使用 Lambda 配置悬浮视图 | ✅ |
 | `globalShow(globalShow: Boolean)` | 设置是否全局显示 | ❌ |
 | `addBlackList(vararg clazz: Class<*>)` | 添加黑名单 Activity | ❌ |
@@ -310,6 +370,7 @@ Builder(activity: Activity)
 |------|------|
 | `show()` | 显示悬浮视图 |
 | `hide()` | 隐藏悬浮视图 |
+| `destroy()` | 销毁悬浮视图并释放资源 |
 | `switchToEdgeView()` | 切换到贴边视图 |
 | `switchToContentView()` | 切换到内容视图 |
 | `setFloatingViewListener(listener: FloatingViewListener)` | 设置点击事件监听器 |
@@ -404,13 +465,13 @@ FloatingViewManager.Builder(this)
 
 ### 5. 内存管理
 
-对于复杂的悬浮视图，建议在不需要时手动隐藏，释放内存：
+对于复杂的悬浮视图，建议在不需要时手动销毁，释放资源：
 
 ```kotlin
 override fun onDestroy() {
     super.onDestroy()
-    // 手动隐藏悬浮视图
-    floatingViewManager.hide()
+    // 销毁悬浮视图（建议在非全局模式下使用）
+    floatingViewManager.destroy()
 }
 ```
 
@@ -422,6 +483,13 @@ override fun onDestroy() {
 - **Gradle**: 8.0+
 
 ## 🔄 更新日志
+
+### v1.1.0 (2025-01-10)
+
+- ✨ 新增：支持多悬浮窗实例（通过 Tag 管理）
+- ✨ 新增：支持自定义贴边边距及半隐藏效果
+- ⚡ 优化：重构内部实例管理，自动销毁重复实例，彻底解决重叠 Bug
+- ⚡ 优化：移除外部依赖，库更加轻量独立
 
 ### v1.0.0 (2025-01-07)
 

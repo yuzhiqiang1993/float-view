@@ -2,58 +2,63 @@ package com.yzq.floating_view
 
 import android.content.Context
 import android.util.AttributeSet
-import android.util.Log
+import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewConfiguration
 import android.view.ViewGroup
 import android.widget.FrameLayout
-import com.yzq.application.AppContext
-
 
 /**
  * 悬浮视图容器
- * 
+ *
  * 支持拖动、贴边、视图切换等功能
- * 
+ *
  * @author yuzhiqiang
  */
 internal class FloatingViewContainer @JvmOverloads constructor(
-    context: Context = AppContext, attrs: AttributeSet? = null, defStyleAttr: Int = 0
-) : FrameLayout(context, attrs, defStyleAttr), FloatingViewListener {
+    context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
+) : FrameLayout(context, attrs, defStyleAttr) {
 
     companion object {
         private const val TAG = "FloatingViewContainer"
         private const val ANIMATION_DURATION_MS = 200L
     }
 
-    private var parentWidth: Float = 0f//父视图的宽度
-    private var parentHeight: Float = 0f//父视图的高度
+    private var parentWidth: Float = 0f // 父视图的宽度
+    private var parentHeight: Float = 0f // 父视图的高度
 
-    private var floatingViewListener: FloatingViewListener? = null//悬浮视图监听器
+    private var lastX = 0f // 记录最新的 X 坐标
+    private var lastY = 0f // 记录最新的 Y 坐标
 
-    private var draggable = true//是否可拖动
-    private var autoMoveToEdge = true//是否自动贴边
-    private var marginEdge = 0//边缘的边距
-    private var contentView: View? = null//内容视图，必选
-    private var moveView: View? = null//移动时的视图，用于移动时显示的view，可选，不设置则默认显示内容视图
-    private var edgeView: View? = null//贴边时的视图，用于贴边时显示的视图，可选，不设置则默认显示内容视图
-    private var edgeViewScale = 1.0f//贴边视图的显示比例,默认是1.0f,只对edgeView有效
-    private var autoShowEdgeView = true //贴边时是否自动显示贴边视图
+    private var floatingViewListener: FloatingViewListener? = null // 悬浮视图监听器
+
+    private var draggable = true // 是否可拖动
+    private var autoMoveToEdge = true // 是否自动贴边
+    private var marginEdge = 0 // 边缘的边距
+    private var contentView: View? = null // 内容视图，必选
+    private var moveView: View? = null // 移动时的视图，用于移动时显示
+    private var edgeView: View? = null // 贴边时的视图，用于贴边时显示
+    private var edgeViewScale = 1.0f // 贴边视图的显示比例
+    private var autoShowEdgeView = true // 贴边时是否自动显示贴边视图
 
 
-    private var touchX = 0f//触摸点的X坐标
-    private var touchY = 0f//触摸点的Y坐标
-    private var viewX = 0f//悬浮视图的X坐标
-    private var viewY = 0f//悬浮视图的Y坐标
+    private var touchX = 0f // 触摸点的X坐标
+    private var touchY = 0f // 触摸点的Y坐标
+    private var viewX = 0f // 悬浮视图的X坐标
+    private var viewY = 0f // 悬浮视图的Y坐标
 
-    private var lastTouchDownTime: Long = 0//最后一次触摸按下的时间戳
+    private var lastTouchDownTime: Long = 0 // 最后一次触摸按下的时间戳
 
 
     fun contentView(view: View) {
         contentView = view
         contentView?.let { safeAddView(it) }
+    }
 
+    fun contentView(@androidx.annotation.LayoutRes layoutResId: Int) {
+        val view = LayoutInflater.from(context).inflate(layoutResId, this, false)
+        contentView(view)
     }
 
     fun edgeView(view: View) {
@@ -62,6 +67,10 @@ internal class FloatingViewContainer @JvmOverloads constructor(
         edgeView?.let { safeAddView(it) }
     }
 
+    fun edgeView(@androidx.annotation.LayoutRes layoutResId: Int) {
+        val view = LayoutInflater.from(context).inflate(layoutResId, this, false)
+        edgeView(view)
+    }
 
     fun moveView(view: View) {
         moveView = view
@@ -69,10 +78,14 @@ internal class FloatingViewContainer @JvmOverloads constructor(
         moveView?.let { safeAddView(it) }
     }
 
+    fun moveView(@androidx.annotation.LayoutRes layoutResId: Int) {
+        val view = LayoutInflater.from(context).inflate(layoutResId, this, false)
+        moveView(view)
+    }
+
     private fun safeAddView(view: View) {
         if (view.parent != null) {
-            val parent = view.parent as ViewGroup
-            parent.removeView(view)
+            (view.parent as ViewGroup).removeView(view)
         }
         addView(view)
     }
@@ -142,6 +155,15 @@ internal class FloatingViewContainer @JvmOverloads constructor(
         return true
     }
 
+    override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
+        // 恢复位置
+        if (lastX != 0f || lastY != 0f) {
+            this.x = lastX
+            this.y = lastY
+        }
+    }
+
     /**
      * 处理移动事件
      * 
@@ -149,13 +171,15 @@ internal class FloatingViewContainer @JvmOverloads constructor(
      */
     private fun handleActionMove(event: MotionEvent) {
         if (!draggable) {
-            Log.d(TAG, "不可拖动，忽略移动事件")
+            FloatViewLog.d(TAG, "不可拖动，忽略移动事件")
             return
         }
         val destinationX = viewX + (event.rawX - touchX)
         val destinationY = viewY + (event.rawY - touchY)
         this.x = destinationX.coerceIn(0f, parentWidth - width)
         this.y = destinationY.coerceIn(0f, parentHeight - height)
+        lastX = this.x
+        lastY = this.y
         showMoveView()
     }
 
@@ -164,19 +188,32 @@ internal class FloatingViewContainer @JvmOverloads constructor(
      */
     private fun handleActionUp() {
         if (isOnClickEvent()) {
-            Log.d(TAG, "触发点击事件")
+            FloatViewLog.d(TAG, "触发点击事件")
             floatingViewListener?.onClick()
+            restoreContentView()
+            return
         }
         if (autoMoveToEdge) {
             if (autoShowEdgeView) {
-                Log.d(TAG, "自动贴边并显示贴边视图")
+                FloatViewLog.d(TAG, "自动贴边并显示贴边视图")
                 switchToEdgeView()
             } else {
-                Log.d(TAG, "自动贴边并显示内容视图")
+                FloatViewLog.d(TAG, "自动贴边并显示内容视图")
                 switchToContentView()
             }
-
+        } else {
+            // 如果不自动贴边，松手后单纯恢复显示内容视图
+            restoreContentView()
         }
+    }
+
+    /**
+     * 仅恢复内容视图的显示状态，不改变位置
+     */
+    private fun restoreContentView() {
+        contentView?.visibility = View.VISIBLE
+        moveView?.visibility = View.INVISIBLE
+        edgeView?.visibility = View.INVISIBLE
     }
 
 
@@ -188,8 +225,8 @@ internal class FloatingViewContainer @JvmOverloads constructor(
     private fun handleActionDown(event: MotionEvent) {
         viewX = x
         viewY = y
-        touchX = event.rawX//触摸点的X坐标
-        touchY = event.rawY//触摸点的Y坐标
+        touchX = event.rawX // 触摸点的X坐标
+        touchY = event.rawY // 触摸点的Y坐标
         lastTouchDownTime = System.currentTimeMillis()
     }
 
@@ -229,7 +266,7 @@ internal class FloatingViewContainer @JvmOverloads constructor(
             parentHeight = (parent as ViewGroup).height.toFloat()
             Result.success(Unit)
         } catch (e: Exception) {
-            Log.e(TAG, "获取父视图宽高失败", e)
+            FloatViewLog.e(TAG, "获取父视图宽高失败", e)
             Result.failure(e)
         }
     }
@@ -252,7 +289,7 @@ internal class FloatingViewContainer @JvmOverloads constructor(
         updateParentContainerSize()
 
         if (edgeView == null) {
-            Log.d(TAG, "未设置贴边视图，切换到内容视图")
+            FloatViewLog.d(TAG, "未设置贴边视图，切换到内容视图")
             switchToContentView()
             return
         }
@@ -262,14 +299,12 @@ internal class FloatingViewContainer @JvmOverloads constructor(
             //是否是左边
             val isNearLeftEdge = this.x < parentWidth / 2
             // 计算最终的x坐标
-            val moveDistance: Float
-            if (isNearLeftEdge) {
-                //如果是左边的话，那么移动的坐标就是负值，这个值实际上就是贴边视图的宽度减去 edgeViewScaleWidth 的值，也就是最终会显示edgeViewScaleWidth的宽度
-                moveDistance = -(edge.width - edgeViewScaleWidth).toFloat()
+            val moveDistance = if (isNearLeftEdge) {
+                // 左边：移动到负坐标，显示 edgeViewScaleWidth 宽度
+                -(edge.width - edgeViewScaleWidth).toFloat()
             } else {
-                //如果是右边，那么移动的距离屏幕的宽度
-                moveDistance = (parentWidth - edgeViewScaleWidth).toFloat()
-
+                // 右边：移动到屏幕右侧
+                (parentWidth - edgeViewScaleWidth).toFloat()
             }
 
             move(moveDistance, y)
@@ -288,7 +323,7 @@ internal class FloatingViewContainer @JvmOverloads constructor(
      */
     internal fun switchToContentView() {
         updateParentContainerSize()
-        Log.d(TAG, "切换到内容视图")
+        FloatViewLog.d(TAG, "切换到内容视图")
         //计算移动的距离
         val moveDistance: Float
         if (this.x < parentWidth / 2) {
@@ -311,17 +346,10 @@ internal class FloatingViewContainer @JvmOverloads constructor(
      * @param destY 目标Y坐标
      */
     private fun move(destX: Float, destY: Float) {
+        lastX = destX
+        lastY = destY
         //从当前位置移动到目标位置，带有动画效果
         this.animate().setDuration(ANIMATION_DURATION_MS).x(destX).y(destY).start()
     }
-
-    /**
-     * 点击事件（FloatingViewListener 接口实现）
-     */
-    override fun onClick() {
-        // 默认实现，如果有需要可以添加逻辑
-        floatingViewListener?.onClick()
-    }
-
 
 }

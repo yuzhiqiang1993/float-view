@@ -20,12 +20,15 @@ mavenPublishing {
 
 android {
     namespace = "com.yzq.floating_view"
+    
+    defaultConfig {
+        consumerProguardFiles("consumer-rules.pro")
+    }
 }
 
 dependencies {
     implementation(platform(libs.kotlin.bom.stable))
     implementation(libs.androidx.core.ktx.stable)
     implementation(libs.androidx.appcompat.stable)
-    api(libs.xeonyu.application)
     implementation(libs.androidx.annotation.jvm)
 }

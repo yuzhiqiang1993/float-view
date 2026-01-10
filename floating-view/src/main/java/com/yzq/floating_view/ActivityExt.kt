@@ -1,7 +1,6 @@
 package com.yzq.floating_view
 
 import android.app.Activity
-import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 
@@ -19,7 +18,7 @@ internal fun Activity.rootContainer(): Result<ViewGroup> {
         val contentView = this.window.decorView.findViewById<View>(android.R.id.content) as ViewGroup
         Result.success(contentView)
     } catch (e: Exception) {
-        Log.e("Ext", "获取根视图容器失败", e)
+        FloatViewLog.e("ActivityExt", "获取根视图容器失败", e)
         Result.failure(e)
     }
 }
