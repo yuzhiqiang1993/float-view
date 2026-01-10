@@ -67,7 +67,8 @@ class SecondActivity : AppCompatActivity() {
                 edgeView(floatViewBinding.edgeView)
                 edgeViewScale(0.8f)
                 autoShowEdgeView(true)
-            }.globalShow(false).build()
+                globalShow(false)
+            }.build()
 
         // 显示悬浮视图
         binding.btnShowFloatView.setOnClickListener {

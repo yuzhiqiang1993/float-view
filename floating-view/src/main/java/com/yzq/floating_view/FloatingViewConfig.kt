@@ -41,6 +41,8 @@ class FloatingViewConfig {
     private var autoMoveToEdge = true//是否自动贴边
     private var autoShowEdgeView = true//贴边后是否自动显示贴边view
     private var marginEdge = 0//内容视图贴边是距离屏幕边缘的距离
+    internal var globalShow = false // 是否全局显示
+    internal val blackList = mutableListOf<Class<*>>() // 黑名单列表
 
     /**
      * 设置内容视图
@@ -52,6 +54,24 @@ class FloatingViewConfig {
         this.contentView = view
         this.contentViewResId = null
     }
+
+    // ... (contentView method overload, no change)
+
+    /**
+     * 设置是否全局显示
+     *
+     * @param globalShow 是否全局显示
+     * @return FloatingViewConfig
+     */
+    fun globalShow(globalShow: Boolean) = apply { this.globalShow = globalShow }
+
+    /**
+     * 添加黑名单 Activity（仅在全局显示模式下有效）
+     *
+     * @param clazz Activity 类列表
+     * @return FloatingViewConfig
+     */
+    fun addBlackList(vararg clazz: Class<*>) = apply { blackList.addAll(clazz) }
 
     /**
      * 设置内容视图（通过布局资源 ID）

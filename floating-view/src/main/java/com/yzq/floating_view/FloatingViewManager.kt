@@ -16,10 +16,8 @@ import android.view.ViewGroup
  */
 class FloatingViewManager private constructor(
     private val context: Context,
-    private val globalShow: Boolean = false,
-    private val blackList: MutableList<Class<*>> = mutableListOf(),
-    private val floatingViewConfig: FloatingViewConfig,
-    private val tag: String
+    private val tag: String,
+    private val floatingViewConfig: FloatingViewConfig
 ) : SimpleActivityLifecycleCallbacks {
 
 
@@ -37,6 +35,25 @@ class FloatingViewManager private constructor(
         private const val DEFAULT_TAG = "default_floating_view"
 
         private val instances = java.util.concurrent.ConcurrentHashMap<String, FloatingViewManager>()
+
+        /**
+         * 根据 Tag 获取悬浮视图管理器实例
+         *
+         * @param tag 标签
+         * @return FloatingViewManager?
+         */
+        fun get(tag: String): FloatingViewManager? {
+            return instances[tag]
+        }
+
+        /**
+         * 根据 Tag 销毁悬浮视图管理器实例
+         *
+         * @param tag 标签
+         */
+        fun destroy(tag: String) {
+            instances[tag]?.destroy()
+        }
     }
 
     @Volatile
@@ -57,7 +74,7 @@ class FloatingViewManager private constructor(
      */
     fun show(activity: Activity? = null) {
         FloatViewLog.d(TAG, "显示悬浮视图")
-        if (globalShow) {
+        if (floatingViewConfig.globalShow) {
             if (context is Application) {
                 // 先移除，防止重复添加
                 context.unregisterActivityLifecycleCallbacks(this)
@@ -77,7 +94,7 @@ class FloatingViewManager private constructor(
         FloatViewLog.d(TAG, "隐藏悬浮视图")
         detach()
         isFirstAttach = true
-        if (globalShow) {
+        if (floatingViewConfig.globalShow) {
             if (context is Application) {
                 context.unregisterActivityLifecycleCallbacks(this)
             }
@@ -93,7 +110,7 @@ class FloatingViewManager private constructor(
     @Synchronized
     private fun attach(activity: Activity) {
         //在黑名单中的页面不显示悬浮窗
-        if (blackList.contains(activity::class.java)) {
+        if (floatingViewConfig.blackList.contains(activity::class.java)) {
             FloatViewLog.d(TAG, "当前 Activity 在黑名单中，不显示悬浮视图")
             return
         }
@@ -193,37 +210,18 @@ class FloatingViewManager private constructor(
 
     /**
      * 构建器类
-     * @param context 上下文（建议传入 Application Context）
+     * @param context 上下文
      */
     class Builder(context: Context) {
         private val context = context.applicationContext
         private var floatingViewConfig = FloatingViewConfig()
-        private var globalShow = false
-        private val blackList = mutableListOf<Class<*>>()
         private var tag = DEFAULT_TAG
-
-        /**
-         * 设置是否全局显示
-         *
-         * @param globalShow 是否全局显示
-         * @return Builder
-         */
-        fun globalShow(globalShow: Boolean) = apply { this.globalShow = globalShow }
-
 
         /**
          * 设置悬浮窗标签（用于支持多个悬浮窗，不设置则默认使用同一TAG）
          * @param tag 标签
          */
         fun tag(tag: String) = apply { this.tag = tag }
-
-        /**
-         * 添加黑名单 Activity
-         *
-         * @param clazz Activity 类列表
-         * @return Builder
-         */
-        fun addBlackList(vararg clazz: Class<*>) = apply { blackList.addAll(clazz) }
 
 
         /**
@@ -256,8 +254,7 @@ class FloatingViewManager private constructor(
                 if (instances.containsKey(tag)) {
                     instances[tag]?.destroy()
                 }
-                val manager =
-                    FloatingViewManager(context, globalShow, blackList, floatingViewConfig, tag)
+                val manager =FloatingViewManager(context, tag, floatingViewConfig)
                 instances[tag] = manager
                 return manager
             }
