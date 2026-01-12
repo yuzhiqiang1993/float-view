@@ -109,10 +109,30 @@ class FloatingViewManager private constructor(
      */
     @Synchronized
     private fun attach(activity: Activity) {
-        //在黑名单中的页面不显示悬浮窗
-        if (floatingViewConfig.blackList.contains(activity::class.java)) {
-            FloatViewLog.d(TAG, "当前 Activity 在黑名单中，不显示悬浮视图")
-            return
+        val activityClass = activity::class.java
+
+        // 白名单优先：如果设置了白名单，只有在白名单中的页面才显示
+        if (floatingViewConfig.whiteList.isNotEmpty()) {
+            val inWhiteList = floatingViewConfig.whiteList.any { it.matches(activityClass) }
+            if (!inWhiteList) {
+                FloatViewLog.d(
+                    TAG,
+                    "当前 Activity 不在白名单中，不显示悬浮视图: ${activity::class.java.name}"
+                )
+                return
+            }
+        }
+
+        // 黑名单检查：在黑名单中的页面不显示悬浮窗
+        if (floatingViewConfig.blackList.isNotEmpty()) {
+            val inBlackList = floatingViewConfig.blackList.any { it.matches(activityClass) }
+            if (inBlackList) {
+                FloatViewLog.d(
+                    TAG,
+                    "当前 Activity 在黑名单中，不显示悬浮视图: ${activity::class.java.name}"
+                )
+                return
+            }
         }
 
         //如果当前页面已经是悬浮窗所在页面，则不再添加

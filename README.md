@@ -11,11 +11,11 @@
 
 - **三视图模式**: 支持内容视图、移动视图、贴边视图三种模式，可根据不同场景自定义显示
 - **拖动支持**: 灵活配置是否支持拖动，满足不同交互需求
-- **自动贴边**: 支持自动吸附到屏幕边缘，提升用户体验
+- **自动贴边**: 支持自动吸附到屏幕边缘,提升用户体验
 - **自定义比例**: 可配置贴边视图的显示比例，实现部分显示效果
 - **全局显示**: 支持跨页面全局显示，自动管理生命周期
-- **黑名单机制**: 可配置黑名单，在指定页面不显示悬浮视图
--  **手动控制**: 支持手动切换显示/隐藏、内容视图/贴边视图
+- **灵活的黑白名单**: 支持类型、包名、类名多种匹配方式，完美适配组件化架构
+- **手动控制**: 支持手动切换显示/隐藏、内容视图/贴边视图
 - **事件回调**: 完善的点击事件监听，方便业务处理
 - **动画效果**: 内置流畅的过渡动画，提升视觉效果
 - **兼容性好**: 支持 API 21+ (Android 5.0+)，覆盖绝大部分设备
@@ -209,20 +209,188 @@ FloatingViewManager.Builder(this)
 - 拖动中：显示 `moveView`（如果设置了）
 - 贴边后：显示 `edgeView`（如果设置了）
 
-### 4. 黑名单机制
+### 4. 黑白名单机制
 
-在全局显示模式下，可以指定不显示悬浮视图的页面：
+在全局显示模式下，支持灵活的黑白名单机制，特别适合**组件化架构**，无需依赖具体的 Activity 类。
+
+#### 4.1 黑名单模式
+
+黑名单模式适用于"默认显示，部分页面不显示"的场景。
+
+##### 方式一：类型匹配（传统方式，保持向后兼容）
 
 ```kotlin
 FloatingViewManager.Builder(this)
     .floatingViewConfig {
         contentView(R.layout.layout_float_view)
         globalShow(true)
+        // 通过 Class 类型过滤
         addBlackList(
-            SplashActivity::class.java,     // 启动页不显示
-            LoginActivity::class.java,       // 登录页不显示
-            FullScreenActivity::class.java   // 全屏页面不显示
+            SplashActivity::class.java,
+            LoginActivity::class.java
         )
+    }
+    .build()
+    .show()
+```
+
+##### 方式二：包名匹配（推荐用于组件化）
+
+```kotlin
+FloatingViewManager.Builder(this)
+    .floatingViewConfig {
+        contentView(R.layout.layout_float_view)
+        globalShow(true)
+        // 通过包名过滤（支持前缀匹配）
+        addBlackListPackages(
+            "com.example.feature.login",      // 登录模块的所有页面
+            "com.example.feature.splash",     // 启动模块的所有页面
+            "com.example.debug"               // Debug 模块的所有页面
+        )
+    }
+    .build()
+    .show()
+```
+
+##### 方式三：类名匹配
+
+```kotlin
+FloatingViewManager.Builder(this)
+    .floatingViewConfig {
+        contentView(R.layout.layout_float_view)
+        globalShow(true)
+        // 通过类名过滤（支持简单类名或全限定类名）
+        addBlackListClassNames(
+            "MainActivity",                    // 匹配任意包下的 MainActivity
+            "com.example.LoginActivity"       // 精确匹配该类
+        )
+    }
+    .build()
+    .show()
+```
+
+##### 方式四：混合使用（最灵活）
+
+```kotlin
+FloatingViewManager.Builder(this)
+    .floatingViewConfig {
+        contentView(R.layout.layout_float_view)
+        globalShow(true)
+        
+        // 使用 ActivityFilterRule 创建自定义规则
+        addBlackList(
+            ActivityFilterRule.ofClass(SplashActivity::class.java),
+            ActivityFilterRule.ofPackage("com.example.feature.debug"),
+            ActivityFilterRule.ofClassName("PaymentActivity")
+        )
+    }
+    .build()
+    .show()
+```
+
+#### 4.2 白名单模式
+
+白名单模式适用于"默认不显示，只在指定页面显示"的场景。**白名单优先级高于黑名单**。
+
+##### 方式一：类型匹配
+
+```kotlin
+FloatingViewManager.Builder(this)
+    .floatingViewConfig {
+        contentView(R.layout.layout_float_view)
+        globalShow(true)
+        // 只在主页和详情页显示
+        addWhiteList(
+            MainActivity::class.java,
+            DetailActivity::class.java
+        )
+    }
+    .build()
+    .show()
+```
+
+##### 方式二：包名匹配（推荐用于组件化）
+
+```kotlin
+FloatingViewManager.Builder(this)
+    .floatingViewConfig {
+        contentView(R.layout.layout_float_view)
+        globalShow(true)
+        // 只在主页模块和商城模块显示
+        addWhiteListPackages(
+            "com.example.feature.home",
+            "com.example.feature.mall"
+        )
+    }
+    .build()
+    .show()
+```
+
+##### 方式三：类名匹配
+
+```kotlin
+FloatingViewManager.Builder(this)
+    .floatingViewConfig {
+        contentView(R.layout.layout_float_view)
+        globalShow(true)
+        // 只在首页和商品详情页显示
+        addWhiteListClassNames(
+            "HomeActivity",
+            "ProductDetailActivity"
+        )
+    }
+    .build()
+    .show()
+```
+
+#### 4.3 优先级说明
+
+过滤规则的优先级：**白名单 > 黑名单**
+
+```kotlin
+FloatingViewManager.Builder(this)
+    .floatingViewConfig {
+        contentView(R.layout.layout_float_view)
+        globalShow(true)
+        
+        // 白名单：只在主页模块显示
+        addWhiteListPackages("com.example.feature.home")
+        
+        // 黑名单：在这种情况下会被忽略，因为白名单优先
+        addBlackList(SplashActivity::class.java)
+    }
+    .build()
+    .show()
+```
+
+**规则说明**：
+1. 如果设置了白名单，只有匹配白名单的页面才会显示悬浮窗
+2. 如果没有设置白名单，则检查黑名单，匹配黑名单的页面不显示
+3. 如果既没有白名单也没有黑名单，默认所有页面都显示
+
+#### 4.4 组件化场景最佳实践
+
+在组件化架构中，主 App 模块通常无法直接依赖各个业务模块的 Activity 类，推荐使用**包名匹配**：
+
+```kotlin
+// 在主 App 模块中
+FloatingViewManager.Builder(this)
+    .floatingViewConfig {
+        contentView(R.layout.layout_float_view)
+        globalShow(true)
+        
+        // 黑名单：不在登录、启动、Debug 模块显示
+        addBlackListPackages(
+            "com.example.feature.login",
+            "com.example.feature.splash",
+            "com.example.debug"
+        )
+        
+        // 或使用白名单：只在主页和商城模块显示
+        // addWhiteListPackages(
+        //     "com.example.feature.home",
+        //     "com.example.feature.mall"
+        // )
     }
     .build()
     .show()
@@ -344,7 +512,19 @@ Builder(context: Context)
 | `edgeView(view: View)` | 设置贴边视图（通过 View） | ❌ |
 | `edgeView(@LayoutRes layoutResId: Int)` | 设置贴边视图（通过布局 ID） | ❌ |
 | `globalShow(globalShow: Boolean)` | 设置是否全局显示 | ❌ |
-| `addBlackList(vararg clazz: Class<*>)` | 添加黑名单 Activity | ❌ |
+
+#### 黑白名单配置
+
+| 方法 | 说明 | 必需 |
+|------|------|------|
+| `addBlackList(vararg rules: ActivityFilterRule)` | 添加黑名单规则 | ❌ |
+| `addBlackList(vararg clazz: Class<*>)` | 添加黑名单 Activity 类型 | ❌ |
+| `addBlackListPackages(vararg packageNames: String)` | 添加黑名单包名 | ❌ |
+| `addBlackListClassNames(vararg classNames: String)` | 添加黑名单类名 | ❌ |
+| `addWhiteList(vararg rules: ActivityFilterRule)` | 添加白名单规则 | ❌ |
+| `addWhiteList(vararg clazz: Class<*>)` | 添加白名单 Activity 类型 | ❌ |
+| `addWhiteListPackages(vararg packageNames: String)` | 添加白名单包名 | ❌ |
+| `addWhiteListClassNames(vararg classNames: String)` | 添加白名单类名 | ❌ |
 
 #### 行为配置
 

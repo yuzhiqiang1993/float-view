@@ -67,7 +67,9 @@ class App : Application() {
                 autoShowEdgeView(true)
                 edgeViewScale(0.7f)
                 globalShow(true) // 全局显示
-                addBlackList(BlackListActivity::class.java) // 黑名单页面不显示
+
+                addBlackList(BlackListActivity::class.java)
+
             }
             .build()
             .setFloatingViewListener(object : FloatingViewListener {

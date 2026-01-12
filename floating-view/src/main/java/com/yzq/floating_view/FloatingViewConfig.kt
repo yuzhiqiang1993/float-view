@@ -42,7 +42,8 @@ class FloatingViewConfig {
     private var autoShowEdgeView = true//贴边后是否自动显示贴边view
     private var marginEdge = 0//内容视图贴边是距离屏幕边缘的距离
     internal var globalShow = false // 是否全局显示
-    internal val blackList = mutableListOf<Class<*>>() // 黑名单列表
+    internal val blackList = mutableListOf<ActivityFilterRule>() // 黑名单规则列表
+    internal val whiteList = mutableListOf<ActivityFilterRule>() // 白名单规则列表（优先级高于黑名单）
 
     /**
      * 设置内容视图
@@ -66,12 +67,114 @@ class FloatingViewConfig {
     fun globalShow(globalShow: Boolean) = apply { this.globalShow = globalShow }
 
     /**
-     * 添加黑名单 Activity（仅在全局显示模式下有效）
+     * 添加黑名单规则（仅在全局显示模式下有效）
+     *
+     * @param rules Activity 过滤规则列表
+     * @return FloatingViewConfig
+     */
+    fun addBlackList(vararg rules: ActivityFilterRule) = apply { blackList.addAll(rules) }
+
+    /**
+     * 添加黑名单 Activity 类型（仅在全局显示模式下有效）
+     *
+     * 这是为了保持 API 向后兼容的便捷方法
      *
      * @param clazz Activity 类列表
      * @return FloatingViewConfig
      */
-    fun addBlackList(vararg clazz: Class<*>) = apply { blackList.addAll(clazz) }
+    fun addBlackList(vararg clazz: Class<*>) = apply {
+        blackList.addAll(clazz.map { ActivityFilterRule.ClassRule(it) })
+    }
+
+    /**
+     * 添加黑名单包名（仅在全局显示模式下有效）
+     *
+     * 匹配指定包名下的所有 Activity
+     *
+     * 示例：
+     * ```
+     * addBlackListPackages("com.example.feature", "com.example.debug")
+     * ```
+     *
+     * @param packageNames 包名列表
+     * @return FloatingViewConfig
+     */
+    fun addBlackListPackages(vararg packageNames: String) = apply {
+        blackList.addAll(packageNames.map { ActivityFilterRule.PackageRule(it) })
+    }
+
+    /**
+     * 添加黑名单类名（仅在全局显示模式下有效）
+     *
+     * 支持简单类名或全限定类名
+     *
+     * 示例：
+     * ```
+     * addBlackListClassNames("MainActivity", "com.example.DebugActivity")
+     * ```
+     *
+     * @param classNames 类名列表（简单名或全限定名）
+     * @return FloatingViewConfig
+     */
+    fun addBlackListClassNames(vararg classNames: String) = apply {
+        blackList.addAll(classNames.map { ActivityFilterRule.ClassNameRule(it) })
+    }
+
+    /**
+     * 添加白名单规则（仅在全局显示模式下有效）
+     *
+     * 白名单优先级高于黑名单，只有在白名单中的 Activity 才会显示悬浮窗
+     *
+     * @param rules Activity 过滤规则列表
+     * @return FloatingViewConfig
+     */
+    fun addWhiteList(vararg rules: ActivityFilterRule) = apply { whiteList.addAll(rules) }
+
+    /**
+     * 添加白名单 Activity 类型（仅在全局显示模式下有效）
+     *
+     * 只有在白名单中的 Activity 才会显示悬浮窗
+     *
+     * @param clazz Activity 类列表
+     * @return FloatingViewConfig
+     */
+    fun addWhiteList(vararg clazz: Class<*>) = apply {
+        whiteList.addAll(clazz.map { ActivityFilterRule.ClassRule(it) })
+    }
+
+    /**
+     * 添加白名单包名（仅在全局显示模式下有效）
+     *
+     * 只有指定包名下的 Activity 才会显示悬浮窗
+     *
+     * 示例：
+     * ```
+     * addWhiteListPackages("com.example.main", "com.example.home")
+     * ```
+     *
+     * @param packageNames 包名列表
+     * @return FloatingViewConfig
+     */
+    fun addWhiteListPackages(vararg packageNames: String) = apply {
+        whiteList.addAll(packageNames.map { ActivityFilterRule.PackageRule(it) })
+    }
+
+    /**
+     * 添加白名单类名（仅在全局显示模式下有效）
+     *
+     * 只有指定类名的 Activity 才会显示悬浮窗
+     *
+     * 示例：
+     * ```
+     * addWhiteListClassNames("MainActivity", "com.example.HomeActivity")
+     * ```
+     *
+     * @param classNames 类名列表（简单名或全限定名）
+     * @return FloatingViewConfig
+     */
+    fun addWhiteListClassNames(vararg classNames: String) = apply {
+        whiteList.addAll(classNames.map { ActivityFilterRule.ClassNameRule(it) })
+    }
 
     /**
      * 设置内容视图（通过布局资源 ID）

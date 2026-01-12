@@ -4,9 +4,6 @@ import android.util.Log
 
 /**
  * 悬浮视图日志工具类
- *
- * 提供统一的日志管理，支持开关控制
- *
  * @author yuzhiqiang
  */
 object FloatViewLog {
